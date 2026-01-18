@@ -86,52 +86,62 @@ sub init_terminal {
     # Redirect stdin to /dev/tty for keyboard input
     # (file input will come from command line arg or pipe before this)
     open(my $tty, '<', '/dev/tty') or die "Cannot open /dev/tty: $!";
-    *STDIN = $tty;
+    local *STDIN = $tty;
+    close($tty);
 
     ReadMode('cbreak');
 
     update_terminal_size();
     clear_screen();
     hide_cursor();
+    return;
 }
 
 sub cleanup_terminal {
     show_cursor();
     clear_screen();
     ReadMode('restore');
+    return;
 }
 
 sub update_terminal_size {
     ($term_width, $term_height) = GetTerminalSize();
     $center_row = int($term_height / 2);
     $center_col = int($term_width / 2);
+    return;
 }
 
 sub clear_screen {
     print "\033[2J";    # Clear entire screen
+    return;
 }
 
 sub hide_cursor {
     print "\033[?25l";
+    return;
 }
 
 sub show_cursor {
     print "\033[?25h";
+    return;
 }
 
 sub move_cursor {
     my ($row, $col) = @_;
     print "\033[${row};${col}H";
+    return;
 }
 
 sub clear_line {
     print "\033[2K";
+    return;
 }
 
 # Display functions
 sub show_guide {
     move_cursor($center_row - 1, $center_col);
     print color('red') . "v" . color('reset');
+    return;
 }
 
 sub show_word {
@@ -158,6 +168,7 @@ sub show_word {
         . ($bionic ? "" : color("bold"))
         . substr($word, $i + 1)
         . color("reset");
+    return;
 }
 
 sub show_progress {
@@ -209,6 +220,7 @@ sub show_progress {
     }
     move_cursor($bottom_row, $term_width - length($count_text) - 1);
     print $count_text;
+    return;
 }
 
 sub print_context {
@@ -239,6 +251,7 @@ sub print_context {
             =~ s/^((?:.*?(?:-|\s)+){$wn})(.*?)(-|\s)/$1 . colored($2, 'yellow') . $3/e;
         print $line0;
     }
+    return;
 }
 
 # Word timing
@@ -316,16 +329,17 @@ sub print_stats {
     printf("\n%.2fs, %d words, %d letters, %s%.2f%s true wpm\n",
         $elapsed, $wordcounter, $lettercounter,
         color('bold green'), $truewpm, color('reset'));
+    return;
 }
 
-$SIG{INT} = sub {
+local $SIG{INT} = sub {
     print_stats();
     my $resume_word = $wordcounter + $resume;
     say " To resume from this point run with argument -r $resume_word";
     exit;
 };
 
-$SIG{WINCH} = sub {
+local $SIG{WINCH} = sub {
     update_terminal_size();
     clear_screen();
 };
@@ -357,7 +371,7 @@ sub main {
         while (1) {
             my $current_time = time();
 
-            if ($next_word_time <= $current_time and !$paused) {
+            if (($next_word_time <= $current_time) and (!$paused)) {
                 $next_word_time += word_time($word);
 
                 $wordcounter++;
@@ -375,7 +389,7 @@ sub main {
             show_progress();
 
             my $sleep_time
-                = ($next_word_time < $next_input_time and !$paused)
+                = (($next_word_time < $next_input_time) and (!$paused))
                 ? $next_word_time - $current_time
                 : $next_input_time - $current_time;
             sleep($sleep_time) if ($sleep_time > 0);
@@ -384,6 +398,7 @@ sub main {
 
     print_stats();
     sleep(1);
+    return;
 }
 
 main();
