@@ -1,0 +1,86 @@
+---
+repos:
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.6
+    hooks:
+      - id: remove-tabs
+        exclude_types: [shell]
+      - id: insert-license
+        stages: [manual]
+        types: [python, perl]
+        args:
+          - --license-filepath
+          - documentation/LICENSE
+          - --comment-style
+          - ""
+          - --no-space-in-comment-prefix
+          - --fuzzy-match-generates-todo
+          - --fuzzy-match-extra-lines-to-check
+          - "10"
+          # --detect-license-in-X-top-lines DETECT_LICENSE_IN_X_TOP_LINES
+          # --fuzzy-ratio-cut-off FUZZY_RATIO_CUT_OFF
+          # --fuzzy-match-todo-comment FUZZY_MATCH_TODO_COMMENT
+          # --fuzzy-match-todo-instructions FUZZY_MATCH_TODO_INSTRUCTIONS
+          # --skip-license-insertion-comment SKIP_LICENSE_INSERTION_COMMENT
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        name: Format Markdown
+        entry: mdformat  # Executable to run, with fixed options
+        language: python
+        types: [markdown]
+        args: [--wrap, "160", --number]
+        additional_dependencies:
+          - mdformat-toc
+          - mdformat-beautysh
+          - mdformat-config
+          - mdformat-black
+          - mdformat-web
+          - mdformat-gfm
+  - repo: https://github.com/lovesegfault/beautysh.git
+    rev: v6.4.2
+    hooks:
+      - id: beautysh
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: no-commit-to-branch
+        args: [--branch, main]
+      - id: check-yaml
+        args: [--unsafe]
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-json
+      - id: mixed-line-ending
+      - id: check-builtin-literals
+      - id: check-ast
+      - id: check-merge-conflict
+        stages: [pre-commit, pre-merge-commit, pre-rebase]
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: check-docstring-first
+      - id: fix-byte-order-marker
+      - id: check-case-conflict
+      # - id: check-toml
+  - repo: https://github.com/perltidy/perltidy
+    rev: "20260109"
+    hooks:
+      - id: perltidy
+        types_or: [text]
+  - repo: https://github.com/henryykt/pre-commit-perl
+    rev: v0.0.5
+    hooks:
+      - id: perlcritic
+        files: '.*'
+        types: [perl]
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        args: ["--ignore-words-list=", --skip="./.*", --quiet-level=2]
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
